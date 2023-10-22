@@ -13,10 +13,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: 'gradle'
-      - name: Install dependencies
+      - name: Prepare environment
         run: |
           chmod +x gradlew
           sudo apt-get install apksigner
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 1095 -dname "C=US, O=Android, CN=Android Debug"
       - name: Test the app
         run: ./gradlew test
       - name: Build debug app
@@ -26,7 +27,7 @@ jobs:
       - name: Build release app
         run: |
           ./gradlew assembleRelease
-          apksigner sign --ks ~/.config/.android/debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android app/build/outputs/apk/release/app-release-unsigned.apk
+          apksigner sign --ks debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android app/build/outputs/apk/release/app-release-unsigned.apk
           mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
           ./gradlew bundleRelease
       - name: Sort files
